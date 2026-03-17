@@ -3,14 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus AI | Intelligent Conversation</title>
-    <meta name="description" content="Nexus AI — A premium conversational AI experience powered by Gemini.">
+    <title>Nexus | Neural Interface</title>
+    <meta name="description" content="Nexus AI — The future of intelligence.">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (Using script for local no-build sexiness) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif']
+                    },
+                    colors: {
+                        space: '#020203',
+                        surface: 'rgba(255, 255, 255, 0.03)',
+                        glass: 'rgba(255, 255, 255, 0.05)',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        accent: '#a9b4ff',
+                        neon: '#00f2ff'
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
+<body class="bg-space text-white font-sans antialiased overflow-hidden selection:bg-accent/30 selection:text-white">
+    <!-- Animated Ambient Background -->
+    <div class="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a1c2c] via-space to-space"></div>
+    <div class="mesh-bg"></div>
+
     <div id="root"></div>
 
     <script type="text/babel">
@@ -21,14 +71,14 @@
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
         const SUGGESTED = [
-            "Explain quantum computing in simple terms",
-            "Write a short story about a time traveler",
-            "Help me debug a React useState issue",
-            "What are the principles of good UI design?",
+            { icon: "cpu", title: "Debug Systems", text: "Help me analyze this React compilation error." },
+            { icon: "zap", title: "Quantum Logic", text: "Explain quantum supremacy in simple terms." },
+            { icon: "compass", title: "Architecture", text: "Design a scalable cloud infrastructure." },
+            { icon: "pen", title: "Creative Engine", text: "Write a futuristic monologue about AI." },
         ];
 
         /* ── Icons ──────────────────────────────────────────── */
-        const Icon = ({ name, size = 20 }) => {
+        const Icon = ({ name, size = 20, className = "" }) => {
             const paths = {
                 send:    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>,
                 plus:    <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
@@ -40,16 +90,19 @@
                 copy:    <><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></>,
                 check:   <polyline points="20 6 9 17 4 12"/>,
                 stop:    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>,
+                cpu:     <><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></>,
+                compass: <><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></>,
+                zap:     <><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>,
+                pen:     <path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-1.5L2 22v4h4L22 10l-4-4z"/>
             };
             return (
                 <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                     {paths[name]}
                 </svg>
             );
         };
 
-        /* ── Copy Button ────────────────────────────────────── */
         const CopyBtn = ({ text }) => {
             const [copied, setCopied] = useState(false);
             const handleCopy = () => {
@@ -59,61 +112,86 @@
                 });
             };
             return (
-                <button onClick={handleCopy} className="copy-btn" title="Copy">
+                <button onClick={handleCopy} className="p-1.5 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-colors" title="Copy">
                     <Icon name={copied ? "check" : "copy"} size={14} />
                 </button>
             );
         };
 
-        /* ── Message Bubble ─────────────────────────────────── */
         const Message = ({ msg }) => {
             const isUser = msg.role === 'user';
             return (
-                <div className={`msg-row ${isUser ? 'msg-user' : 'msg-ai'}`}>
-                    {!isUser && (
-                        <div className="ai-avatar">
-                            <Icon name="nexus" size={16} />
-                        </div>
-                    )}
-                    <div className={`msg-bubble ${isUser ? 'bubble-user' : 'bubble-ai'}`}>
-                        {!isUser && <div className="ai-label">Nexus</div>}
-                        <div className="msg-text" style={{whiteSpace:'pre-wrap'}}>{msg.content}</div>
-                        {!isUser && <CopyBtn text={msg.content} />}
+                <div className={`flex gap-4 w-full ${isUser ? 'flex-row-reverse' : ''} animate-fade-in group`}>
+                    {/* Avatar */}
+                    <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-lg border
+                        ${isUser 
+                          ? 'bg-gradient-to-tr from-accent/20 to-white/10 border-white/20' 
+                          : 'bg-gradient-to-tr from-[#1a1c2c] to-surface border-border'}
+                    `}>
+                        {isUser ? <span className="font-bold font-display tracking-widest text-sm">USR</span> : <Icon name="nexus" size={18} className="text-accent" />}
                     </div>
-                    {isUser && <div className="user-avatar">U</div>}
+                    
+                    {/* Bubble */}
+                    <div className={`flex flex-col relative max-w-[85%] lg:max-w-[75%] ${isUser ? 'items-end' : 'items-start'}`}>
+                        {!isUser && <span className="text-[10px] font-bold tracking-widest uppercase text-white/30 mb-2 ml-1">Nexus Protocol</span>}
+                        <div className={`glass-panel p-5 text-sm md:text-base leading-relaxed tracking-wide shadow-2xl
+                            ${isUser 
+                              ? 'rounded-3xl rounded-tr-sm bg-gradient-to-br from-white/10 to-transparent' 
+                              : 'rounded-3xl rounded-tl-sm premium-glow bg-surface'}
+                        `}>
+                            <div className="whitespace-pre-wrap font-light text-white/90">{msg.content}</div>
+                        </div>
+                        {/* Actions */}
+                        {!isUser && (
+                            <div className="absolute -bottom-8 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                                <CopyBtn text={msg.content} />
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         };
 
-        /* ── Typing Dots ────────────────────────────────────── */
-        const TypingDots = () => (
-            <div className="msg-row msg-ai">
-                <div className="ai-avatar"><Icon name="nexus" size={16} /></div>
-                <div className="bubble-ai typing-bubble">
-                    <div className="ai-label">Nexus</div>
-                    <div className="typing-dots">
-                        <span></span><span></span><span></span>
+        const TypingIndicator = () => (
+            <div className="flex gap-4 w-full animate-fade-in">
+                <div className="shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-tr from-[#1a1c2c] to-surface border border-border shadow-lg">
+                    <Icon name="nexus" size={18} className="text-accent animate-pulse" />
+                </div>
+                <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-white/30 mb-2 ml-1">Processing Matrix</span>
+                    <div className="glass-panel rounded-3xl rounded-tl-sm p-5 premium-glow bg-surface flex items-center gap-2 h-[52px]">
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent animate-bounce"></div>
                     </div>
                 </div>
             </div>
         );
 
-        /* ── Sidebar Item ───────────────────────────────────── */
         const SidebarItem = ({ chat, active, onSelect, onDelete }) => (
-            <div className={`sidebar-item ${active ? 'active' : ''}`} onClick={onSelect}>
-                <Icon name="chat" size={14} />
-                <span className="sidebar-title">{chat.title}</span>
-                <button className="sidebar-delete" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
-                    <Icon name="trash" size={13} />
+            <div 
+                onClick={onSelect}
+                className={`group cursor-pointer flex items-center justify-between p-3 rounded-xl mb-2 transition-all duration-300 border
+                    ${active 
+                      ? 'bg-white/10 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)] text-white' 
+                      : 'bg-transparent border-transparent text-white/50 hover:bg-white/5 hover:text-white/80'}
+                `}
+            >
+                <div className="flex items-center gap-3 overflow-hidden">
+                    <Icon name="chat" size={14} className={active ? 'text-accent' : ''} />
+                    <span className="text-sm truncate font-medium tracking-wide">{chat.title}</span>
+                </div>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-all text-white/50"
+                >
+                    <Icon name="trash" size={14} />
                 </button>
             </div>
         );
 
-        /* ── Main App ───────────────────────────────────────── */
         const App = () => {
-            const [chats, setChats] = useState([
-                { id: 1, title: 'New Conversation', messages: [] }
-            ]);
+            const [chats, setChats] = useState([{ id: 1, title: 'Alpha Session', messages: [] }]);
             const [activeChatId, setActiveChatId] = useState(1);
             const [input, setInput] = useState('');
             const [loading, setLoading] = useState(false);
@@ -134,16 +212,17 @@
 
             const newChat = () => {
                 const id = Date.now();
-                setChats(prev => [{ id, title: 'New Conversation', messages: [] }, ...prev]);
+                setChats(prev => [{ id, title: 'New Uplink', messages: [] }, ...prev]);
                 setActiveChatId(id);
                 setInput('');
+                if (window.innerWidth < 1024) setSidebarOpen(false);
             };
 
             const deleteChat = (id) => {
                 setChats(prev => {
                     const next = prev.filter(c => c.id !== id);
                     if (activeChatId === id && next.length > 0) setActiveChatId(next[0].id);
-                    return next.length > 0 ? next : [{ id: Date.now(), title: 'New Conversation', messages: [] }];
+                    return next.length > 0 ? next : [{ id: Date.now(), title: 'Alpha Session', messages: [] }];
                 });
             };
 
@@ -151,13 +230,13 @@
                 const msg = (text || input).trim();
                 if (!msg || loading) return;
                 setInput('');
+                if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
                 const userMsg = { role: 'user', content: msg };
                 const updatedMessages = [...messages, userMsg];
 
-                // Auto-title the chat from first message
                 if (messages.length === 0) {
-                    const title = msg.length > 40 ? msg.slice(0, 40) + '…' : msg;
+                    const title = msg.length > 30 ? msg.slice(0, 30) + '…' : msg;
                     updateChat(activeChatId, c => ({ ...c, title, messages: updatedMessages }));
                 } else {
                     updateChat(activeChatId, c => ({ ...c, messages: updatedMessages }));
@@ -176,14 +255,14 @@
                         body: JSON.stringify({ contents: history })
                     });
 
-                    if (res.status === 429) throw new Error("Rate limit reached. Please wait a moment and try again.");
+                    if (res.status === 429) throw new Error("Neural link saturated. Rate limit exceeded, awaiting cooldown.");
                     if (!res.ok) {
                         const err = await res.json().catch(() => ({}));
-                        throw new Error(err?.error?.message || `API error ${res.status}`);
+                        throw new Error(err?.error?.message || `Matrix fault ${res.status}`);
                     }
 
                     const data = await res.json();
-                    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+                    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal lost in the void.";
 
                     updateChat(activeChatId, c => ({
                         ...c,
@@ -192,7 +271,7 @@
                 } catch (err) {
                     updateChat(activeChatId, c => ({
                         ...c,
-                        messages: [...c.messages, { role: 'assistant', content: `⚠️ ${err.message}` }]
+                        messages: [...c.messages, { role: 'assistant', content: `[SYSTEM ERROR]: ${err.message}` }]
                     }));
                 } finally {
                     setLoading(false);
@@ -208,102 +287,140 @@
 
             const adjustHeight = () => {
                 const ta = textareaRef.current;
-                if (ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'; }
+                if (ta) { 
+                    ta.style.height = 'auto'; 
+                    ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'; 
+                }
             };
 
-            const isEmpty = messages.length === 0;
-
             return (
-                <div className="app">
+                <div className="flex h-screen w-full relative z-10 transition-all duration-500">
+                    
                     {/* Sidebar */}
-                    <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
-                        <div className="sidebar-header">
-                            <div className="brand">
-                                <Icon name="nexus" size={22} />
-                                <span>Nexus AI</span>
+                    <aside className={`
+                        absolute lg:relative z-40 h-full shrink-0 flex flex-col glass-sidebar border-r border-border
+                        transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+                        ${sidebarOpen ? 'w-full sm:w-80 translate-x-0' : 'w-80 -translate-x-full lg:w-0 lg:translate-x-0 lg:border-none lg:opacity-0 lg:overflow-hidden'}
+                    `}>
+                        <div className="p-6 flex items-center justify-between border-b border-border">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 border border-white/10 rounded-xl bg-white/5 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                                    <Icon name="nexus" size={20} className="text-white drop-shadow-lg" />
+                                </div>
+                                <span className="font-display font-bold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">NEXUS</span>
                             </div>
-                            <button className="icon-btn" onClick={newChat} title="New chat">
-                                <Icon name="plus" size={18} />
-                            </button>
+                            <div className="flex gap-2">
+                                <button className="p-2 rounded-xl border border-white/10 hover:bg-white/10 hover:text-accent transition-all text-white/60 lg:hidden" onClick={() => setSidebarOpen(false)}>
+                                    <Icon name="menu" size={18} />
+                                </button>
+                                <button className="p-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 hover:text-accent hover:shadow-[0_0_15px_rgba(169,180,255,0.3)] transition-all text-white" onClick={newChat}>
+                                    <Icon name="plus" size={18} />
+                                </button>
+                            </div>
                         </div>
-                        <div className="sidebar-list">
+
+                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                            <div className="text-[10px] font-bold tracking-widest uppercase text-white/30 mb-4 ml-2">Active Links</div>
                             {chats.map(chat => (
-                                <SidebarItem
-                                    key={chat.id}
-                                    chat={chat}
-                                    active={chat.id === activeChatId}
-                                    onSelect={() => setActiveChatId(chat.id)}
-                                    onDelete={() => deleteChat(chat.id)}
-                                />
+                                <SidebarItem key={chat.id} chat={chat} active={chat.id === activeChatId} onSelect={() => { setActiveChatId(chat.id); if(window.innerWidth < 1024) setSidebarOpen(false); }} onDelete={() => deleteChat(chat.id)} />
                             ))}
                         </div>
-                        <div className="sidebar-footer">
-                            <div className="model-tag">gemini-3.1-flash-lite-preview</div>
+
+                        <div className="p-6 border-t border-border bg-black/20 backdrop-blur-md">
+                            <div className="flex items-center gap-3 p-3 rounded-xl border border-accent/20 bg-accent/5">
+                                <div className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(169,180,255,0.8)]"></div>
+                                <span className="text-xs font-mono text-accent/80 truncate">v3.1-flash-lite-preview</span>
+                            </div>
                         </div>
                     </aside>
 
-                    {/* Main */}
-                    <main className="main">
-                        {/* Top Bar */}
-                        <div className="topbar">
-                            <button className="icon-btn" onClick={() => setSidebarOpen(o => !o)}>
-                                <Icon name="menu" size={20} />
-                            </button>
-                            <span className="topbar-title">{activeChat?.title}</span>
-                            <button className="icon-btn new-chat-btn" onClick={newChat} title="New chat">
+                    {/* Main Area */}
+                    <main className="flex-1 flex flex-col h-full relative z-10 w-full overflow-hidden">
+                        
+                        {/* Header */}
+                        <header className="h-20 shrink-0 flex items-center justify-between px-6 border-b border-border/50 bg-space/40 backdrop-blur-md z-20">
+                            <div className="flex items-center gap-4">
+                                {!sidebarOpen && (
+                                    <button className="p-2 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-all shadow-sm" onClick={() => setSidebarOpen(true)}>
+                                        <Icon name="menu" size={20} />
+                                    </button>
+                                )}
+                                <span className="font-medium tracking-wide text-white/80">{activeChat?.title}</span>
+                            </div>
+                            <button className="p-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:text-cyan-300 transition-all text-white/80 shadow-sm md:hidden" onClick={newChat}>
                                 <Icon name="edit" size={18} />
                             </button>
-                        </div>
+                        </header>
 
-                        {/* Chat Area */}
-                        <div className="chat-area">
-                            {isEmpty ? (
-                                <div className="empty-state">
-                                    <div className="empty-logo">
-                                        <Icon name="nexus" size={40} />
+                        {/* Chat Feed */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 scroll-smooth pb-10">
+                            <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8 md:py-12">
+                                {messages.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in text-center">
+                                        <div className="relative mb-8 group">
+                                            <div className="absolute inset-0 bg-blue-500/20 blur-[50px] rounded-full group-hover:bg-accent/30 transition-all duration-700"></div>
+                                            <div className="w-24 h-24 border border-white/20 rounded-3xl bg-glass backdrop-blur-xl flex items-center justify-center shadow-2xl animate-float relative z-10">
+                                                <Icon name="nexus" size={48} className="text-white" />
+                                            </div>
+                                        </div>
+                                        <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight drop-shadow-md">Initialize Sequence</h1>
+                                        <p className="text-white/40 font-light text-lg mb-16 max-w-lg tracking-wide">Enter a command to access the neural network capabilities.</p>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl px-4">
+                                            {SUGGESTED.map((s, i) => (
+                                                <button key={i} onClick={() => handleSend(s.text)} className="group flex flex-col items-start text-left p-6 glass-panel border border-border rounded-2xl hover:border-accent/40 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(169,180,255,0.2)]">
+                                                    <Icon name={s.icon} size={20} className="mb-4 text-white/40 group-hover:text-accent transition-colors duration-300" />
+                                                    <span className="font-medium mb-1 tracking-wide">{s.title}</span>
+                                                    <span className="text-xs text-white/40 group-hover:text-white/70 transition-colors leading-relaxed">{s.text}</span>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <h1 className="empty-title">How can I help you?</h1>
-                                    <p className="empty-sub">Powered by Gemini 3.1 Flash Lite Preview</p>
-                                    <div className="suggestions">
-                                        {SUGGESTED.map((s, i) => (
-                                            <button key={i} className="suggestion-card" onClick={() => handleSend(s)}>
-                                                {s}
-                                            </button>
-                                        ))}
+                                ) : (
+                                    <div className="space-y-12 pb-12">
+                                        {messages.map((msg, i) => <Message key={i} msg={msg} />)}
+                                        {loading && <TypingIndicator />}
+                                        <div ref={bottomRef} className="h-4" />
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="messages">
-                                    {messages.map((msg, i) => <Message key={i} msg={msg} />)}
-                                    {loading && <TypingDots />}
-                                    <div ref={bottomRef} />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Input */}
-                        <div className="input-wrap">
-                            <div className="input-box">
-                                <textarea
-                                    ref={textareaRef}
-                                    value={input}
-                                    onChange={e => { setInput(e.target.value); adjustHeight(); }}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Message Nexus..."
-                                    rows={1}
-                                    disabled={loading}
-                                    className="chat-input"
-                                />
-                                <button
-                                    onClick={() => handleSend()}
-                                    disabled={!input.trim() || loading}
-                                    className={`send-btn ${input.trim() && !loading ? 'active' : ''}`}
-                                >
-                                    <Icon name={loading ? "stop" : "send"} size={18} />
-                                </button>
+                                )}
                             </div>
-                            <p className="input-disclaimer">Nexus can make mistakes. Verify important information.</p>
                         </div>
+
+                        {/* Input Area */}
+                        <div className="shrink-0 p-4 sm:p-6 bg-gradient-to-t from-space via-space/95 to-transparent backdrop-blur-sm z-20">
+                            <div className="max-w-4xl mx-auto relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-accent/0 via-accent/20 to-neon/0 rounded-[32px] blur opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+                                <div className="relative flex flex-col glass-panel border border-border bg-glass rounded-[28px] overflow-hidden shadow-2xl transition-all duration-300 focus-within:border-white/30 focus-within:bg-white/10">
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={input}
+                                        onChange={e => { setInput(e.target.value); adjustHeight(); }}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Transmit instructions to Nexus..."
+                                        rows={1}
+                                        disabled={loading}
+                                        className="w-full bg-transparent text-white px-6 py-5 pr-20 resize-none focus:outline-none custom-scrollbar min-h-[64px] max-h-[200px] font-sans text-[15px] md:text-base placeholder:text-white/30"
+                                    />
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                                        <button
+                                            onClick={() => handleSend()}
+                                            disabled={!input.trim() || loading}
+                                            className={`p-3.5 rounded-2xl flex items-center justify-center transition-all duration-500
+                                                ${input.trim() && !loading 
+                                                    ? 'bg-accent text-[#020203] shadow-[0_0_20px_rgba(169,180,255,0.4)] scale-100 hover:scale-105 hover:bg-white' 
+                                                    : 'bg-white/5 text-white/20 cursor-not-allowed scale-95'
+                                                }`}
+                                        >
+                                            <Icon name={loading ? "stop" : "send"} size={18} className={loading ? 'animate-pulse' : ''} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="text-center mt-3 text-[10px] sm:text-xs text-white/30 font-light tracking-wide font-sans">
+                                    NEXUS Core processing may yield anomalies. Validate critical outputs.
+                                </div>
+                            </div>
+                        </div>
+
                     </main>
                 </div>
             );
