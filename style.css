@@ -1,80 +1,59 @@
-/* Ultra Premium Styling Overrides */
+/* style.css - Premium Additions */
 
-/* Selection */
-::selection {
-    background: rgba(169, 180, 255, 0.3);
-    color: #ffffff;
-}
-
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+@layer utilities {
+    .glass-panel {
+        background: rgba(40, 40, 50, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 }
 
-/* Glassmorphism Classes */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+/* Base styles and reset (if needed on top of Tailwind) */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #09090b; /* Dark base theme */
 }
 
-.glass-sidebar {
-    background: rgba(2, 2, 3, 0.6);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+/* Custom scrollbar for an edge *premium* feel */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #09090b; 
+}
+::-webkit-scrollbar-thumb {
+    background: #27272a; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46; 
 }
 
-/* Premium Glows */
-.premium-glow {
-    box-shadow: 
-        inset 0 1px 0 0 rgba(255,255,255,0.05),
-        0 4px 20px 0 rgba(0,0,0,0.4);
+/* Glowing text utility for high impact */
+.text-glow {
+    text-shadow: 0 0 20px rgba(45, 212, 191, 0.5); /* Brand teal glow */
 }
 
-/* Base Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Subtle continuous animations */
+@keyframes hoverFloat {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
 }
 
-.animate-fade-in {
-    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.animate-float {
+    animation: hoverFloat 6s ease-in-out infinite;
 }
 
-/* Mesh Background Gradient Automation */
-.mesh-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -2;
-    background: 
-        radial-gradient(circle at 15% 50%, rgba(169, 180, 255, 0.04), transparent 40%),
-        radial-gradient(circle at 85% 30%, rgba(0, 242, 255, 0.03), transparent 45%);
-    filter: blur(60px);
-    animation: pulseBg 20s ease-in-out infinite alternate;
+/* Input Placeholder transition */
+input::placeholder {
+    transition: color 0.3s ease;
 }
-
-@keyframes pulseBg {
-    0% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.1) translate(2%, 2%); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.8; }
-}
-
-/* Removing input default styles */
-textarea {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: thin; /* Firefox */
+input:focus::placeholder {
+    color: transparent;
 }
