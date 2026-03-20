@@ -1,23 +1,16 @@
-# NEXUS | Premium Digital Experience
+# React + Vite
 
-A state-of-the-art React application built with a focus on luxury aesthetics, high-performance animations, and dynamic data visualization.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Tech Stack
-- **Core:** React 18 (via CDN)
-- **Styling:** Tailwind CSS (Play CDN)
-- **Animations:** AOS (Animate On Scroll) & Custom CSS Keyframes
-- **Icons:** Lucide React
-- **Typography:** Outfit (Google Fonts)
+Currently, two official plugins are available:
 
-## Features
-- **Luxury Dark Theme:** Deep black surfaces with neon cyan and purple accents.
-- **Glassmorphism:** backdrop-blur cards with delicate bordering.
-- **Dynamic Dashboard:** Automated intelligence feed integrating the provided API key.
-- **Micro-interactions:** Gradient border glows on hover and fluid scroll transitions.
-- **Adaptive Layout:** Fully responsive from mobile to ultra-wide displays.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## API Integration
-The system is configured to use the key `zvs5oNys1zJjLJwhM7knAfPbdBKgsXyn`. It defaults to a News Intelligence stream. If the key is intended for a different service (e.g. Crypto/Weather), the `Dashboard` component's `fetchIntel` function can be easily mapped to the corresponding endpoint.
+## React Compiler
 
-## How to View
-Simply open `index.html` in any modern browser. No build step required as it uses Babel for real-time JSX transformation.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
