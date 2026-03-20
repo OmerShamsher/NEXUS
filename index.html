@@ -127,7 +127,8 @@
         const { useState, useEffect } = React;
         const { motion, AnimatePresence } = window.Motion;
 
-        const API_KEY = "c5f6b264248a773f7dc75ff743b2f5e6";
+        // Ensure to supply this from your environment variables or backend when deploying
+        const API_KEY = "YOUR_API_KEY_HERE";
 
         // Supported Currencies
         const CURRENCIES = [
@@ -229,21 +230,22 @@
 
             const handleConvert = (e) => {
                 if(e) e.preventDefault();
-                // We use the cached rates to convert instantly. 
-                // Only re-fetch if we really want to refresh. Let's just calculate.
-                if (rates) {
-                    calculateConversion(amount, fromCurrency, toCurrency, rates);
-                } else {
-                    fetchRates();
-                }
+                setLoading(true);
+                // Simulate network calculation for the UI effect so button "feels" working
+                setTimeout(() => {
+                    if (rates) {
+                        calculateConversion(amount, fromCurrency, toCurrency, rates);
+                    } else {
+                        fetchRates(false);
+                    }
+                    setLoading(false);
+                }, 400);
             };
 
             const swapCurrencies = () => {
                 setFromCurrency(toCurrency);
                 setToCurrency(fromCurrency);
-                if (rates) {
-                    calculateConversion(amount, toCurrency, fromCurrency, rates); // Note the swapped args
-                }
+                setResult(null); // Hide result to compel conversion
             };
 
             const formatCurrency = (val, currencyCode) => {
@@ -305,7 +307,7 @@
                                                 value={amount}
                                                 onChange={(e) => {
                                                     setAmount(e.target.value);
-                                                    if(rates) calculateConversion(e.target.value, fromCurrency, toCurrency, rates);
+                                                    setResult(null);
                                                 }}
                                                 className="w-full bg-white/5 border border-white/10 outline-none rounded-3xl py-5 pl-14 pr-6 text-4xl font-bold text-white transition-all focus:border-gold-500/50 focus:bg-white/10"
                                                 placeholder="0.00"
@@ -324,7 +326,7 @@
                                                     value={fromCurrency}
                                                     onChange={(e) => {
                                                         setFromCurrency(e.target.value);
-                                                        if(rates) calculateConversion(amount, e.target.value, toCurrency, rates);
+                                                        setResult(null);
                                                     }}
                                                     className="w-full appearance-none bg-white/5 border border-white/10 outline-none rounded-2xl py-4 px-5 text-xl font-medium text-white cursor-pointer transition-all group-hover:bg-white/10 focus:border-gold-500/50"
                                                 >
@@ -363,7 +365,7 @@
                                                     value={toCurrency}
                                                     onChange={(e) => {
                                                         setToCurrency(e.target.value);
-                                                        if(rates) calculateConversion(amount, fromCurrency, e.target.value, rates);
+                                                        setResult(null);
                                                     }}
                                                     className="w-full appearance-none bg-white/5 border border-white/10 outline-none rounded-2xl py-4 px-5 text-xl font-medium text-white cursor-pointer transition-all group-hover:bg-white/10 focus:border-gold-500/50"
                                                 >
