@@ -77,3 +77,16 @@ CREATE POLICY "Messages can be sent by auth users." ON messages FOR INSERT WITH 
 CREATE POLICY "Public Read Access" ON storage.objects FOR SELECT USING (bucket_id = 'posts_content');
 CREATE POLICY "Authenticated Upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'posts_content');
 CREATE POLICY "Delete own files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'posts_content' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- 9. Follows Table (NEW)
+CREATE TABLE IF NOT EXISTS follows (
+  follower_id UUID REFERENCES profiles (id) ON DELETE CASCADE,
+  following_id UUID REFERENCES profiles (id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (follower_id, following_id)
+);
+
+ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read access to follows." ON follows FOR SELECT USING (true);
+CREATE POLICY "Users can follow/unfollow." ON follows FOR ALL TO authenticated USING (auth.uid() = follower_id);

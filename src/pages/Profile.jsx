@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Grid, Bookmark, Tag, SquarePlus, Edit, CheckCircle, Loader2 } from 'lucide-react';
+import { Settings, Grid, Bookmark, Tag, SquarePlus, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { profile: currentUserProfile, session } = useAuth();
   const { id } = useParams();
+  const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('posts');
   const [posts, setPosts] = useState([]);
   const [targetProfile, setTargetProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Follow State
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
 
-  // If no ID in URL, we are viewing our own profile. 
-  // If ID matches session.user.id, it's also our own profile.
   const isOwnProfile = !id || (session?.user?.id === id);
   const targetUserId = id || session?.user?.id;
 
@@ -28,7 +33,6 @@ const Profile = () => {
   const fetchData = async () => {
     setLoading(true);
     
-    // 1. Fetch Profile Data
     if (isOwnProfile) {
       setTargetProfile(currentUserProfile);
     } else {
@@ -41,84 +45,144 @@ const Profile = () => {
       setTargetProfile(profileData);
     }
 
-    // 2. Fetch User's Posts
     const { data: postsData } = await supabase
       .from('posts')
       .select('*')
       .eq('user_id', targetUserId)
       .order('created_at', { ascending: false });
 
-    if (postsData) {
-      setPosts(postsData);
+    if (postsData) setPosts(postsData);
+
+    // Fetch Follow Data
+    const { count: followers } = await supabase.from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', targetUserId);
+      
+    const { count: following } = await supabase.from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', targetUserId);
+
+    setFollowersCount(followers || 0);
+    setFollowingCount(following || 0);
+
+    if (!isOwnProfile && session?.user?.id) {
+      const { data: followCheck } = await supabase.from('follows')
+        .select('created_at')
+        .eq('follower_id', session.user.id)
+        .eq('following_id', targetUserId)
+        .single();
+        
+      if (followCheck) setIsFollowing(true);
+      else setIsFollowing(false);
     }
     
     setLoading(false);
   };
 
+  const handleFollowToggle = async () => {
+    if (followLoading || !session?.user || isOwnProfile) return;
+    setFollowLoading(true);
+
+    try {
+      if (isFollowing) {
+        await supabase.from('follows')
+          .delete()
+          .eq('follower_id', session.user.id)
+          .eq('following_id', targetUserId);
+        setFollowersCount(p => p - 1);
+        setIsFollowing(false);
+      } else {
+        await supabase.from('follows')
+          .insert({ follower_id: session.user.id, following_id: targetUserId });
+        setFollowersCount(p => p + 1);
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      console.error("Error toggling follow:", err);
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  const startMessage = () => {
+    if (!targetProfile) return;
+    // Simple redirect passing state so Messages can open a chat tab
+    navigate('/messages', { state: { directUserId: targetProfile.id, directUsername: targetProfile.username, directAvatar: targetProfile.avatar_url } });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[50vh]">
-        <Loader2 className="animate-spin text-accent" size={40} />
+        <Loader2 className="animate-spin text-white" size={40} />
       </div>
     );
   }
 
   if (!targetProfile) {
     return (
-      <div className="flex justify-center items-center h-full min-h-[50vh] text-muted">
+      <div className="flex justify-center items-center h-full min-h-[50vh] text-zinc-500">
         <h3>User not found.</h3>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[935px] mx-auto py-12 px-6">
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-12 mb-16">
-        <div className="avatar w-32 h-32 md:w-44 md:h-44 p-1 md:p-1.5 bg-gradient-to-r from-accent to-purple-600 transition-transform hover:rotate-3">
-           <div className="avatar-inner">
-             <img src={targetProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetProfile.username}`} className="rounded-full w-full h-full object-cover bg-black" alt="" />
-           </div>
+    <div className="max-w-[900px] mx-auto py-12 px-6 lg:px-10">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-10 lg:gap-16 mb-16">
+        <div className="relative group shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-tr from-zinc-800 to-zinc-400 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+          <div className="avatar w-32 h-32 md:w-44 md:h-44 p-1 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-300 relative z-10">
+             <div className="w-full h-full rounded-full border-4 border-black overflow-hidden bg-black">
+               <img src={targetProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetProfile.username}`} className="w-full h-full object-cover" alt="" />
+             </div>
+          </div>
         </div>
         
-        <div className="flex-grow flex flex-col gap-6 w-full md:w-auto text-center md:text-left">
+        <div className="flex-grow flex flex-col gap-6 w-full md:w-auto text-center md:text-left pt-2">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <h1 className="fs-3 fw-bold flex items-center gap-2 m-0">
+            <h1 className="text-2xl font-black flex items-center gap-2 m-0 tracking-tight text-white">
                {targetProfile.username || 'Nexus User'}
-               <CheckCircle size={18} className="text-blue-500 fill-current" />
+               <CheckCircle size={18} className="text-white fill-current opacity-80" />
             </h1>
-            <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="flex items-center gap-3 w-full md:w-auto">
                {isOwnProfile ? (
                  <>
-                   <button className="premium-btn py-2 px-6 text-sm flex-grow md:flex-grow-0 bg-white/5 border border-white/10 hover:bg-white/10 text-white">Edit Profile</button>
-                   <button className="premium-btn py-2 px-6 text-sm flex-grow md:flex-grow-0 bg-white/5 border border-white/10 hover:bg-white/10 text-white">View Archive</button>
-                   <button className="p-2 hover:bg-white/5 rounded-xl border-0 bg-transparent text-white"><Settings size={22} /></button>
+                   <button className="bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white font-bold text-sm py-2 px-6 rounded-xl transition-colors flex-grow md:flex-grow-0 cursor-pointer">Edit Profile</button>
+                   <button className="bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white font-bold text-sm py-2 px-6 rounded-xl transition-colors flex-grow md:flex-grow-0 cursor-pointer">Archive</button>
+                   <button className="p-2 hover:bg-zinc-900 rounded-xl transition-colors text-white cursor-pointer"><Settings size={22} /></button>
                  </>
                ) : (
                  <>
-                   <button className="premium-btn py-2 px-8 text-sm flex-grow md:flex-grow-0 border-0 outline-none text-white">Follow</button>
-                   <button className="premium-btn py-2 px-8 text-sm flex-grow md:flex-grow-0 bg-white/5 border border-white/10 hover:bg-white/10 text-white">Message</button>
-                   <button className="p-2 hover:bg-white/5 rounded-xl border-0 bg-transparent text-white"><Settings size={22} /></button>
+                   <button 
+                     onClick={handleFollowToggle}
+                     disabled={followLoading}
+                     className={`${isFollowing ? 'bg-zinc-900 hover:bg-zinc-800 border-white/10 border' : 'bg-white hover:bg-zinc-200 text-black border-transparent'} font-bold text-sm py-2 px-8 rounded-xl transition-colors flex-grow md:flex-grow-0 cursor-pointer`}
+                   >
+                     {isFollowing ? 'Following' : 'Follow'}
+                   </button>
+                   <button onClick={startMessage} className="bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white font-bold text-sm py-2 px-8 rounded-xl transition-colors flex-grow md:flex-grow-0 cursor-pointer">Message</button>
+                   <button className="p-2 hover:bg-zinc-900 rounded-xl transition-colors text-white cursor-pointer"><Settings size={22} /></button>
                  </>
                )}
             </div>
           </div>
 
-          <div className="flex items-center justify-center md:justify-start gap-10">
-             <div className="flex items-center gap-1.5"><span className="fw-black text-lg">{posts.length}</span><span className="text-muted text-sm fs-5">posts</span></div>
-             <div className="flex items-center gap-1.5 cursor-pointer hover:text-accent transition-colors"><span className="fw-black text-lg">1.2K</span><span className="text-muted text-sm fs-5">followers</span></div>
-             <div className="flex items-center gap-1.5 cursor-pointer hover:text-accent transition-colors"><span className="fw-black text-lg">840</span><span className="text-muted text-sm fs-5">following</span></div>
+          <div className="flex items-center justify-center md:justify-start gap-8 lg:gap-12">
+             <div className="flex items-center gap-2"><span className="font-black text-lg text-white">{posts.length}</span><span className="text-zinc-500 font-medium text-sm">posts</span></div>
+             <div className="flex items-center gap-2"><span className="font-black text-lg text-white">{followersCount.toLocaleString()}</span><span className="text-zinc-500 font-medium text-sm">followers</span></div>
+             <div className="flex items-center gap-2"><span className="font-black text-lg text-white">{followingCount.toLocaleString()}</span><span className="text-zinc-500 font-medium text-sm">following</span></div>
           </div>
 
-          <div className="flex flex-col gap-1">
-             <span className="fw-black text-sm">{targetProfile.full_name || 'Premium Nexus Member'}</span>
-             <p className="text-muted text-sm leading-relaxed max-w-md fs-5 m-0 mb-1">{targetProfile.bio || 'Digital architect crafting the next generation of social aesthetics. 🚀✨ #NexusElite'}</p>
-             <a href="#" className="text-accent text-sm fw-bold no-underline decoration-accent hover:underline">nexus.social/{targetProfile.username}</a>
+          <div className="flex flex-col gap-1.5 mt-2">
+             <span className="font-black text-sm text-white">{targetProfile.full_name || 'Premium Member'}</span>
+             <p className="text-zinc-400 text-sm leading-relaxed max-w-lg m-0">{targetProfile.bio || 'Designing the future of human connection. Redefining what it means to be social. 🚀'}</p>
+             <a href="#" className="font-bold text-xs mt-1 text-white hover:underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">nexus.social/{targetProfile.username}</a>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="flex justify-center gap-16">
+      <div className="border-t border-white/[0.05]">
+        <div className="flex justify-center gap-12 lg:gap-16">
           {[
             { id: 'posts', icon: Grid, label: 'POSTS' },
             { id: 'reels', icon: SquarePlus, label: 'REELS' },
@@ -128,37 +192,40 @@ const Profile = () => {
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-4 flex items-center gap-2 border-0 bg-transparent cursor-pointer transition-all duration-300 relative outline-none ${activeTab === tab.id ? 'text-white' : 'text-muted hover:text-white'}`}
+              className={`py-5 flex items-center gap-2 border-0 bg-transparent cursor-pointer transition-colors relative outline-none ${activeTab === tab.id ? 'text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
             >
-               {activeTab === tab.id && <motion.div layoutId="tab-active" className="absolute top-0 left-0 right-0 h-0.5 bg-accent" />}
-               <tab.icon size={14} className={activeTab === tab.id ? 'text-accent' : ''} />
-               <span className="text-xs fw-black tracking-widest">{tab.label}</span>
+               {activeTab === tab.id && <motion.div layoutId="profile-tab" className="absolute top-0 left-0 right-0 h-px bg-white" />}
+               <tab.icon size={14} className={activeTab === tab.id ? 'text-white' : ''} />
+               <span className="text-xs font-black tracking-widest">{tab.label}</span>
             </button>
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-1 md:gap-7 py-8">
+        <div className="grid grid-cols-3 gap-1 md:gap-6 py-8">
            {posts.length > 0 ? posts.map((post) => (
              <motion.div 
-               whileHover={{ scale: 1.02 }}
+               whileHover={{ scale: 1.01 }}
                key={post.id} 
-               className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl border border-white/5 bg-black"
+               className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl bg-zinc-900 border border-transparent hover:border-white/10 transition-colors"
              >
                 {post.type === 'video' ? (
-                  <video src={post.content_url} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                  <video src={post.content_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 ) : (
-                  <img src={post.content_url} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="" />
+                  <img src={post.content_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                 )}
                 
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-8 transition-opacity">
-                   <div className="flex items-center gap-2 text-white fw-black"><Grid size={20} fill="white" /> -- </div>
-                   <div className="flex items-center gap-2 text-white fw-black"><Bookmark size={20} fill="white" /> -- </div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-6 transition-all duration-300 backdrop-blur-sm">
+                   <div className="flex items-center gap-2 text-white font-black"><Heart size={20} fill="white" /> -- </div>
+                   <div className="flex items-center gap-2 text-white font-black"><MessageCircle size={20} fill="white" /> -- </div>
                 </div>
              </motion.div>
            )) : (
-             <div className="col-span-3 text-center py-20 text-muted">
-               <Grid size={48} className="opacity-20 mx-auto mb-4" />
-               <h3 className="fw-bold">No Posts Yet</h3>
+             <div className="col-span-3 flex flex-col items-center justify-center py-24 text-zinc-600">
+               <div className="w-20 h-20 rounded-full border border-zinc-800 flex items-center justify-center mb-4">
+                  <Grid size={32} strokeWidth={1.5} />
+               </div>
+               <h3 className="font-black text-xl text-white mb-2">No Posts Yet</h3>
+               <p className="text-sm font-medium">When they share photos or reels, they'll appear here.</p>
              </div>
            )}
         </div>
