@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Search, 
@@ -14,8 +14,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = () => {
-  const { signOut, profile } = useAuth();
+const Sidebar = ({ onCreateClick }) => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   
   const navItems = [
     { name: 'Home', icon: Home, path: '/' },
@@ -24,13 +25,11 @@ const Sidebar = () => {
     { name: 'Reels', icon: Video, path: '/reels' },
     { name: 'Messages', icon: MessageCircle, path: '/messages' },
     { name: 'Notifications', icon: Heart, path: '/notifications' },
-    { name: 'Create', icon: PlusSquare, path: '/create' },
-    { name: 'Profile', icon: User, path: '/profile' }
   ];
 
   return (
     <aside className="sidebar shadow-2xl">
-      <div className="sidebar-logo flex items-center gap-3">
+      <div className="sidebar-logo flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
         <Instagram size={28} className="text-white fill-current" />
         <span className="nav-text fs-4 fw-black tracking-tighter">NEXUS</span>
       </div>
@@ -46,11 +45,27 @@ const Sidebar = () => {
             <span className="nav-text">{item.name}</span>
           </NavLink>
         ))}
+        
+        <button 
+          onClick={onCreateClick} 
+          className="nav-link border-0 w-full text-left bg-transparent cursor-pointer"
+        >
+          <PlusSquare className="nav-icon" />
+          <span className="nav-text">Create</span>
+        </button>
+
+        <NavLink 
+          to="/profile" 
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          <User className="nav-icon" />
+          <span className="nav-text">Profile</span>
+        </NavLink>
       </nav>
 
       <div className="mt-auto">
-         <button onClick={signOut} className="nav-link border-0 w-full text-left bg-transparent cursor-pointer">
-            <LogOut className="nav-icon" />
+         <button onClick={signOut} className="nav-link border-0 w-full text-left bg-transparent cursor-pointer group">
+            <LogOut className="nav-icon text-muted group-hover:text-red-500 transition-colors" />
             <span className="nav-text">Logout</span>
          </button>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -11,12 +11,21 @@ import Reels from './pages/Reels';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 
-// components
+// Components
 import Sidebar from './components/Sidebar';
+import CreatePost from './components/CreatePost';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedLayout = ({ children }) => {
   const { session, loading } = useAuth();
-  
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleOpen = () => setIsCreateOpen(true);
+    window.addEventListener('open-create-post', handleOpen);
+    return () => window.removeEventListener('open-create-post', handleOpen);
+  }, []);
+
   if (loading) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
@@ -30,10 +39,32 @@ const ProtectedRoute = ({ children }) => {
       <div className="ambient-blob pointer-events-none fixed top-[-20%] right-[-10%] w-[50vw] h-[50vh] bg-purple-900/10 blur-[150px] rounded-full z-0"></div>
       <div className="ambient-blob pointer-events-none fixed bottom-[-20%] left-[-10%] w-[50vw] h-[50vh] bg-accent/10 blur-[150px] rounded-full z-0"></div>
       
-      <Sidebar />
+      <Sidebar onCreateClick={() => setIsCreateOpen(true)} />
+      
       <main className="main-wrapper flex-grow relative z-10 w-full overflow-y-auto no-scrollbar scrollbar-hide">
-         {children}
+         <AnimatePresence mode="wait">
+            <motion.div 
+              key={location.pathname}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              {children}
+            </motion.div>
+         </AnimatePresence>
       </main>
+
+      <AnimatePresence>
+        {isCreateOpen && (
+          <CreatePost 
+            isOpen={isCreateOpen} 
+            onClose={() => setIsCreateOpen(false)} 
+            onRefresh={() => window.location.reload()} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -42,27 +73,19 @@ const AppRoutes = () => {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* PUBLIC ROUTES */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <Routes location={location} key={location.pathname}>
+      {/* PUBLIC ROUTES */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-        {/* PROTECTED ROUTES */}
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/reels" element={<ProtectedRoute><Reels /></ProtectedRoute>} />
-        <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        
-        {/* FALLBACKS */}
-        <Route path="/search" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/explore" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/notifications" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/create" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AnimatePresence>
+      {/* PROTECTED ROUTES */}
+      <Route path="/" element={<ProtectedLayout><Home /></ProtectedLayout>} />
+      <Route path="/reels" element={<ProtectedLayout><Reels /></ProtectedLayout>} />
+      <Route path="/messages" element={<ProtectedLayout><Messages /></ProtectedLayout>} />
+      <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 

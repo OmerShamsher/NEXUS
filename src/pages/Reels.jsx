@@ -1,44 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import Reel from '../components/Reel';
 import { supabase } from '../lib/supabaseClient';
-import { Loader2, Music, TrendingUp } from 'lucide-react';
+import { Loader2, Music, TrendingUp, PlaySquare } from 'lucide-react';
 
 const Reels = () => {
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const mockReels = [
-    {
-      id: 1,
-      username: 'iam_omer',
-      avatar: 'https://i.pravatar.cc/150?u=omer',
-      videoUrl: 'https://cdn.pixabay.com/video/2020/09/24/50766-462376239_large.mp4',
-      caption: 'The future of social media is dark. 🕶️ #Luxury #AI #NEXUS',
-      likes: '1.2M',
-      comments: '4.5K'
-    },
-    {
-      id: 2,
-      username: 'nexus_elite',
-      avatar: 'https://i.pravatar.cc/150?u=nexus',
-      videoUrl: 'https://cdn.pixabay.com/video/2016/09/06/5045-181177659_medium.mp4',
-      caption: 'Code with passion. Build with soul. 💻🔥 #DeveloperLife',
-      likes: '89K',
-      comments: '1.2K'
-    },
-    {
-      id: 3,
-      username: 'travel_mode',
-      avatar: 'https://i.pravatar.cc/150?u=travel',
-      videoUrl: 'https://cdn.pixabay.com/video/2021/04/12/70878-537442111_tiny.mp4',
-      caption: 'Exploring the hidden gems of the north. 🏔️ #Adventure',
-      likes: '235K',
-      comments: '890'
-    }
-  ];
-
   useEffect(() => {
     fetchReels();
+
+    const channel = supabase
+      .channel('public:reels')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts', filter: "type=eq.video" }, (payload) => {
+        fetchReels();
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
   const fetchReels = async () => {
@@ -54,22 +33,19 @@ const Reels = () => {
 
       if (error) throw error;
       
-      if (data && data.length > 0) {
+      if (data) {
         setReels(data.map(r => ({
           id: r.id,
-          username: r.profiles.username,
-          avatar: r.profiles.avatar_url,
+          username: r.profiles?.username || 'Nexus Member',
+          avatar: r.profiles?.avatar_url,
           videoUrl: r.content_url,
           caption: r.caption,
-          likes: '1.5M',
-          comments: '8K'
+          likes: '0',
+          comments: '0'
         })));
-      } else {
-        setReels(mockReels);
       }
     } catch (err) {
       console.error("Error fetching reels:", err);
-      setReels(mockReels);
     } finally {
       setLoading(false);
     }
@@ -93,11 +69,25 @@ const Reels = () => {
         <div className="flex justify-center items-center h-[80vh]">
           <Loader2 className="animate-spin text-accent" size={48} />
         </div>
-      ) : (
+      ) : reels.length > 0 ? (
         <div className="reel-container">
           {reels.map((reel) => (
             <Reel key={reel.id} {...reel} />
           ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-[70vh] text-center gap-6 px-10">
+           <PlaySquare size={80} className="text-white/10" />
+           <div>
+             <h2 className="fw-black fs-2 mb-2">No Reels Yet</h2>
+             <p className="text-muted fs-5 leading-relaxed max-w-sm">Share your story in motion. Upload your first reel and influence the community.</p>
+           </div>
+           <button 
+             onClick={() => window.dispatchEvent(new CustomEvent('open-create-post'))}
+             className="premium-btn px-10"
+           >
+              CREATE REEL
+           </button>
         </div>
       )}
     </div>

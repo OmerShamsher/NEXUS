@@ -70,3 +70,10 @@ CREATE POLICY "Comments can be added by auth users." ON comments FOR INSERT WITH
 
 CREATE POLICY "Messages viewable by sender/receiver." ON messages FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
 CREATE POLICY "Messages can be sent by auth users." ON messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
+
+-- 8. Storage Setup (Create bucket 'posts_content' manually in UI, set to PUBLIC)
+-- After creating the bucket, run these policies:
+
+CREATE POLICY "Public Read Access" ON storage.objects FOR SELECT USING (bucket_id = 'posts_content');
+CREATE POLICY "Authenticated Upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'posts_content');
+CREATE POLICY "Delete own files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'posts_content' AND (storage.foldername(name))[1] = auth.uid()::text);
