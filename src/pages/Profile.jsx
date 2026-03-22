@@ -201,17 +201,17 @@ const Profile = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-1 md:gap-6 py-8">
+        <div className="grid grid-cols-3 gap-1 md:gap-[28px] py-4">
            {posts.length > 0 ? posts.map((post) => (
              <motion.div 
                whileHover={{ scale: 1.01 }}
                key={post.id} 
-               className="aspect-square relative group cursor-pointer overflow-hidden rounded-xl bg-zinc-900 border border-transparent hover:border-white/10 transition-colors"
+               className="aspect-square relative group cursor-pointer overflow-hidden bg-zinc-900 border border-transparent hover:border-white/10 transition-colors"
              >
                 {post.type === 'video' ? (
-                  <video src={post.content_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <video src={post.content_url} className="w-full h-full object-cover transition-transform duration-700" />
                 ) : (
-                  <img src={post.content_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                  <img src={post.content_url} className="w-full h-full object-cover transition-transform duration-700" alt="" />
                 )}
                 
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-6 transition-all duration-300 backdrop-blur-sm">
