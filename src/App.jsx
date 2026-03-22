@@ -95,6 +95,7 @@ const AppRoutes = () => {
       <Route path="/reels" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Reels /></ProtectedLayout>} />
       <Route path="/messages" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Messages /></ProtectedLayout>} />
       <Route path="/profile" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Profile /></ProtectedLayout>} />
+      <Route path="/profile/:id" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Profile /></ProtectedLayout>} />
       
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

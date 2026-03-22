@@ -28,7 +28,7 @@ const Home = () => {
         .from('posts')
         .select(`
           *,
-          profiles:user_id (username, avatar_url)
+          profiles:user_id (id, username, avatar_url)
         `)
         .order('created_at', { ascending: false });
 
@@ -36,7 +36,8 @@ const Home = () => {
       
       if (data) {
         setPosts(data.map(p => ({
-          id: p.id,
+          postId: p.id,
+          userId: p.profiles?.id,
           username: p.profiles?.username || 'Unknown',
           avatar: p.profiles?.avatar_url,
           mediaUrl: p.content_url,
@@ -75,7 +76,7 @@ const Home = () => {
           </div>
         ) : (
           posts.map((post) => (
-            <Post key={post.id} {...post} />
+            <Post key={post.postId} {...post} />
           ))
         )}
       </div>
