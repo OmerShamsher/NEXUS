@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Grid, Bookmark, Tag, SquarePlus, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Settings, Grid, Bookmark, Tag, SquarePlus, CheckCircle, Loader2, ArrowRight, Heart, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
@@ -70,8 +70,8 @@ const Profile = () => {
         .select('created_at')
         .eq('follower_id', session.user.id)
         .eq('following_id', targetUserId)
-        .single();
-        
+        .maybeSingle();
+
       if (followCheck) setIsFollowing(true);
       else setIsFollowing(false);
     }

@@ -34,7 +34,7 @@ const Post = ({ postId, userId, username, avatar, mediaUrl, caption, commentsTot
         .select('id')
         .eq('post_id', postId)
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
         
       if (!userError && data) {
         setLiked(true);
