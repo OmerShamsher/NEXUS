@@ -37,6 +37,26 @@ const Signup = () => {
     }
 
     if (authData.user) {
+      // Ensure a matching `profiles` row exists for the new auth user.
+      // This makes the rest of the app (feed/profile/follow) work immediately.
+      try {
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .upsert({
+            id: authData.user.id,
+            username,
+            full_name: fullName,
+            avatar_url: null,
+            bio: '',
+          });
+
+        if (profileErr) {
+          console.warn('Profile upsert failed:', profileErr);
+        }
+      } catch (err) {
+        console.warn('Profile upsert error:', err);
+      }
+
       alert("Registration successful! Welcome to the nexus.");
       navigate('/login');
     }

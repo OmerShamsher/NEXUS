@@ -12,6 +12,8 @@ const Profile = () => {
   
   const [activeTab, setActiveTab] = useState('posts');
   const [posts, setPosts] = useState([]);
+  const [reelsPosts, setReelsPosts] = useState([]);
+  const [savedPosts, setSavedPosts] = useState([]);
   const [targetProfile, setTargetProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -51,7 +53,42 @@ const Profile = () => {
       .eq('user_id', targetUserId)
       .order('created_at', { ascending: false });
 
-    if (postsData) setPosts(postsData);
+    if (postsData) {
+      setPosts(postsData);
+      setReelsPosts((postsData || []).filter((p) => p.type === 'video'));
+    } else {
+      setPosts([]);
+      setReelsPosts([]);
+    }
+
+    // Saved posts (only for own profile)
+    if (isOwnProfile) {
+      const { data: savesData, error: savesErr } = await supabase
+        .from('saves')
+        .select('post_id, created_at')
+        .eq('user_id', targetUserId);
+
+      if (!savesErr && savesData && savesData.length > 0) {
+        const postIds = savesData.map((s) => s.post_id);
+        const saveCreatedAtByPostId = new Map(savesData.map((s) => [s.post_id, s.created_at]));
+
+        const { data: savedPostsData } = await supabase
+          .from('posts')
+          .select('*')
+          .in('id', postIds);
+
+        const sorted = (savedPostsData || []).sort((a, b) => {
+          const at = saveCreatedAtByPostId.get(a.id);
+          const bt = saveCreatedAtByPostId.get(b.id);
+          return new Date(bt).getTime() - new Date(at).getTime();
+        });
+        setSavedPosts(sorted);
+      } else {
+        setSavedPosts([]);
+      }
+    } else {
+      setSavedPosts([]);
+    }
 
     // Fetch Follow Data
     const { count: followers } = await supabase.from('follows')
@@ -202,7 +239,49 @@ const Profile = () => {
         </div>
 
         <div className="grid grid-cols-3 gap-1 md:gap-[28px] py-4">
-           {posts.length > 0 ? posts.map((post) => (
+           {(() => {
+             const gridPosts =
+               activeTab === 'posts'
+                 ? posts
+                 : activeTab === 'reels'
+                   ? reelsPosts
+                   : activeTab === 'saved'
+                     ? savedPosts
+                     : [];
+
+             if (activeTab === 'tagged') {
+               return (
+                 <div className="col-span-3 flex flex-col items-center justify-center py-24 text-zinc-600">
+                   <div className="w-20 h-20 rounded-full border border-zinc-800 flex items-center justify-center mb-4">
+                     <Tag size={32} strokeWidth={1.5} />
+                   </div>
+                   <h3 className="font-black text-xl text-white mb-2">Tagged photos</h3>
+                   <p className="text-sm font-medium">
+                     This demo does not include tagged media yet.
+                   </p>
+                 </div>
+               );
+             }
+
+             if (gridPosts.length === 0) {
+               return (
+                 <div className="col-span-3 flex flex-col items-center justify-center py-24 text-zinc-600">
+                   <div className="w-20 h-20 rounded-full border border-zinc-800 flex items-center justify-center mb-4">
+                     <Grid size={32} strokeWidth={1.5} />
+                   </div>
+                   <h3 className="font-black text-xl text-white mb-2">
+                     {activeTab === 'saved' ? 'No Saved Posts' : 'No Posts Yet'}
+                   </h3>
+                   <p className="text-sm font-medium">
+                     {activeTab === 'saved'
+                       ? 'Bookmark posts and reels to see them here.'
+                       : 'When they share photos or reels, they will appear here.'}
+                   </p>
+                 </div>
+               );
+             }
+
+             return gridPosts.map((post) => (
              <motion.div 
                whileHover={{ scale: 1.01 }}
                key={post.id} 
@@ -219,15 +298,8 @@ const Profile = () => {
                    <div className="flex items-center gap-2 text-white font-black"><MessageCircle size={20} fill="white" /> -- </div>
                 </div>
              </motion.div>
-           )) : (
-             <div className="col-span-3 flex flex-col items-center justify-center py-24 text-zinc-600">
-               <div className="w-20 h-20 rounded-full border border-zinc-800 flex items-center justify-center mb-4">
-                  <Grid size={32} strokeWidth={1.5} />
-               </div>
-               <h3 className="font-black text-xl text-white mb-2">No Posts Yet</h3>
-               <p className="text-sm font-medium">When they share photos or reels, they'll appear here.</p>
-             </div>
-           )}
+             ));
+           })()}
         </div>
       </div>
     </div>

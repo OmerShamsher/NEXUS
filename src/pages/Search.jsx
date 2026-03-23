@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Search as SearchIcon, UserPlus, Loader2, X } from 'lucide-react';
+import { Search as SearchIcon, Loader2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Search = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { session } = useAuth();
+  const [following, setFollowing] = useState(() => new Set());
+  const [toggleLoadingId, setToggleLoadingId] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,6 +39,73 @@ const Search = () => {
       console.error("Search error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchFollowingForResults = async () => {
+      if (!session?.user) {
+        setFollowing(new Set());
+        return;
+      }
+      const ids = results.map((r) => r.id);
+      if (ids.length === 0) {
+        setFollowing(new Set());
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('follows')
+          .select('following_id')
+          .eq('follower_id', session.user.id)
+          .in('following_id', ids);
+        if (error) throw error;
+        setFollowing(new Set((data || []).map((f) => f.following_id)));
+      } catch (err) {
+        console.error('Error fetching follow state for results:', err);
+      }
+    };
+
+    fetchFollowingForResults();
+  }, [results, session?.user?.id]);
+
+  const handleToggleFollow = async (targetUserId) => {
+    if (!session?.user || toggleLoadingId) return;
+    setToggleLoadingId(targetUserId);
+
+    const next = !following.has(targetUserId);
+    setFollowing((prev) => {
+      const n = new Set(prev);
+      if (next) n.add(targetUserId);
+      else n.delete(targetUserId);
+      return n;
+    });
+
+    try {
+      if (next) {
+        await supabase.from('follows').insert({
+          follower_id: session.user.id,
+          following_id: targetUserId,
+        });
+      } else {
+        await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', session.user.id)
+          .eq('following_id', targetUserId);
+      }
+    } catch (err) {
+      console.error('Error toggling follow:', err);
+      // Revert UI on error
+      setFollowing((prev) => {
+        const n = new Set(prev);
+        if (next) n.delete(targetUserId);
+        else n.add(targetUserId);
+        return n;
+      });
+    } finally {
+      setToggleLoadingId(null);
     }
   };
 
@@ -89,8 +160,14 @@ const Search = () => {
                     <span className="text-muted text-xs">{user.full_name}</span>
                   </div>
                 </div>
-                <button className="premium-btn py-1.5 px-5 text-xs tracking-tight bg-accent hover:bg-white/10 border-0 outline-none">
-                  Follow
+                <button
+                  onClick={() => handleToggleFollow(user.id)}
+                  disabled={toggleLoadingId === user.id}
+                  className={`premium-btn py-1.5 px-5 text-xs tracking-tight border-0 outline-none ${
+                    following.has(user.id) ? 'bg-zinc-900 hover:bg-zinc-800 text-white' : 'bg-accent hover:bg-white/10'
+                  }`}
+                >
+                  {following.has(user.id) ? 'Following' : 'Follow'}
                 </button>
               </motion.div>
             ))}

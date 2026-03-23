@@ -58,6 +58,7 @@ ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 -- 7. Basic Policies
 CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can handle own profile." ON profiles FOR ALL USING (auth.uid() = id);
+CREATE POLICY "Users can insert their own profile." ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Posts are viewable by everyone." ON posts FOR SELECT USING (true);
 CREATE POLICY "Users can insert posts." ON posts FOR INSERT WITH CHECK (auth.role() = 'authenticated');
@@ -90,3 +91,17 @@ ALTER TABLE follows ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read access to follows." ON follows FOR SELECT USING (true);
 CREATE POLICY "Users can follow/unfollow." ON follows FOR ALL TO authenticated USING (auth.uid() = follower_id);
+
+-- 10. Saves (Bookmarks)
+CREATE TABLE IF NOT EXISTS saves (
+  user_id UUID REFERENCES profiles (id) ON DELETE CASCADE,
+  post_id BIGINT REFERENCES posts (id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (user_id, post_id)
+);
+
+ALTER TABLE saves ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read access to saves." ON saves FOR SELECT USING (true);
+CREATE POLICY "Users can save posts." ON saves FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can remove own saves." ON saves FOR DELETE USING (auth.uid() = user_id);

@@ -42,6 +42,7 @@ const Home = () => {
           avatar: p.profiles?.avatar_url,
           mediaUrl: p.content_url,
           caption: p.caption,
+            type: p.type || 'image',
           likesTotal: 0, 
           commentsTotal: 0
         })));

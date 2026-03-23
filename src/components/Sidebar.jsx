@@ -7,6 +7,7 @@ import {
   Video, 
   MessageCircle, 
   Heart, 
+  Bookmark,
   PlusSquare, 
   User, 
   LogOut,
@@ -27,6 +28,7 @@ const Sidebar = ({ onCreateClick, theme, toggleTheme }) => {
     { name: 'Reels', icon: Video, path: '/reels' },
     { name: 'Messages', icon: MessageCircle, path: '/messages' },
     { name: 'Notifications', icon: Heart, path: '/notifications' },
+    { name: 'Saved', icon: Bookmark, path: '/saved' },
   ];
 
   return (

@@ -11,6 +11,9 @@ import Reels from './pages/Reels';
 import Messages from './pages/Messages';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
+import Explore from './pages/Explore';
+import Notifications from './pages/Notifications';
+import Saved from './pages/Saved';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -92,8 +95,11 @@ const AppRoutes = () => {
 
       <Route path="/" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Home /></ProtectedLayout>} />
       <Route path="/search" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Search /></ProtectedLayout>} />
+      <Route path="/explore" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Explore /></ProtectedLayout>} />
       <Route path="/reels" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Reels /></ProtectedLayout>} />
       <Route path="/messages" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Messages /></ProtectedLayout>} />
+      <Route path="/notifications" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Notifications /></ProtectedLayout>} />
+      <Route path="/saved" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Saved /></ProtectedLayout>} />
       <Route path="/profile" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Profile /></ProtectedLayout>} />
       <Route path="/profile/:id" element={<ProtectedLayout theme={theme} toggleTheme={toggleTheme}><Profile /></ProtectedLayout>} />
       

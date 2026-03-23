@@ -35,13 +35,12 @@ const Reels = () => {
       
       if (data) {
         setReels(data.map(r => ({
-          id: r.id,
+          postId: r.id,
+          userId: r.user_id,
           username: r.profiles?.username || 'Nexus Member',
           avatar: r.profiles?.avatar_url,
           videoUrl: r.content_url,
           caption: r.caption,
-          likes: '0',
-          comments: '0'
         })));
       }
     } catch (err) {
@@ -72,7 +71,7 @@ const Reels = () => {
       ) : reels.length > 0 ? (
         <div className="reel-container">
           {reels.map((reel) => (
-            <Reel key={reel.id} {...reel} />
+            <Reel key={reel.postId} {...reel} />
           ))}
         </div>
       ) : (
