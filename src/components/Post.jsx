@@ -252,17 +252,17 @@ const Post = ({
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass rounded-3xl overflow-hidden border border-white/5 transition-all duration-500 hover:border-white/10 group mb-6 bg-black/40"
+      className="glass rounded-3xl overflow-hidden border border-[color:var(--border)]/60 transition-all duration-500 hover:border-[color:var(--accent-secondary)]/50 group mb-6"
     >
-      <div className="flex items-center justify-between p-4 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+      <div className="flex items-center justify-between p-4 border-b border-[color:var(--border)]/40 bg-[color:var(--glass)]">
         <Link to={`/profile/${userId}`} className="flex items-center gap-3 no-underline decoration-transparent hover:opacity-80 transition-opacity">
           <div className="avatar w-10 h-10 p-0.5 ring-2 ring-transparent group-hover:ring-accent/50 transition-all rounded-full overflow-hidden">
-             <div className="avatar-inner w-full h-full rounded-full overflow-hidden bg-black">
+             <div className="avatar-inner w-full h-full rounded-full overflow-hidden bg-secondary">
                 <img src={avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`} className="w-full h-full object-cover" alt={username} />
              </div>
           </div>
           <div className="flex flex-col">
-            <span className="fw-black text-sm text-white tracking-tight">{username}</span>
+            <span className="fw-black text-sm text-main tracking-tight">{username}</span>
             <span className="text-xs text-accent fw-bold flex items-center gap-1">Nexus Member</span>
           </div>
         </Link>
@@ -270,7 +270,7 @@ const Post = ({
       </div>
 
       <div
-        className="relative cursor-pointer bg-black/50 aspect-square overflow-hidden flex items-center justify-center"
+        className="relative cursor-pointer bg-[color:var(--bg-secondary)]/60 aspect-square overflow-hidden flex items-center justify-center"
         onDoubleClick={handleLike}
       >
         {type === 'video' ? (
@@ -296,26 +296,26 @@ const Post = ({
 
       <div className="p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 p-2 rounded-full bg-[color:var(--glass)] border border-[color:var(--border)]/40">
                <button 
                  onClick={handleLike} 
-                 className={`p-0 border-0 bg-transparent transition-transform hover:scale-110 active:scale-90 ${liked ? 'text-accent' : 'text-white'}`}
+                 className={`p-2 rounded-full border-0 bg-transparent transition-all hover:bg-[color:var(--bg-hover)] hover:scale-110 active:scale-95 ${liked ? 'text-accent' : 'text-main'}`}
                >
                   <Heart size={28} fill={liked ? 'currentColor' : 'none'} strokeWidth={liked ? 0 : 1.5} />
                </button>
                <button
                  onClick={startDirectMessage}
-                 className="p-0 border-0 bg-transparent text-white transition-transform hover:scale-110 active:scale-90 cursor-pointer"
+                 className="p-2 rounded-full border-0 bg-transparent text-main transition-all hover:bg-[color:var(--bg-hover)] hover:scale-110 active:scale-95 cursor-pointer"
                >
                  <MessageCircle size={28} strokeWidth={1.5} />
                </button>
-               <button className="p-0 border-0 bg-transparent text-white transition-transform hover:scale-110 active:scale-90"><Send size={28} strokeWidth={1.5} /></button>
+               <button className="p-2 rounded-full border-0 bg-transparent text-main transition-all hover:bg-[color:var(--bg-hover)] hover:scale-110 active:scale-95 cursor-pointer"><Send size={28} strokeWidth={1.5} /></button>
             </div>
             <button
               onClick={handleToggleSave}
               disabled={saving}
-              className={`p-0 border-0 bg-transparent transition-transform hover:scale-110 active:scale-90 cursor-pointer ${
-                saved ? 'text-accent' : 'text-white'
+              className={`p-2 rounded-full border-0 bg-transparent transition-all hover:bg-[color:var(--bg-hover)] hover:scale-110 active:scale-95 cursor-pointer ${
+                saved ? 'text-accent' : 'text-main'
               }`}
             >
               <Bookmark size={28} fill={saved ? 'currentColor' : 'none'} strokeWidth={1.5} />
@@ -327,14 +327,14 @@ const Post = ({
         </div>
 
         <div className="text-sm">
-          <Link to={`/profile/${userId}`} className="fw-black me-2 text-white no-underline hover:underline">{username}</Link>
-          <span className="text-white/80 leading-relaxed">{caption}</span>
+          <Link to={`/profile/${userId}`} className="fw-black me-2 text-main no-underline hover:underline">{username}</Link>
+          <span className="text-[color:var(--text-main)]/80 leading-relaxed">{caption}</span>
         </div>
 
         {commentsCount > 0 && (
           <button
             onClick={() => setShowComments((v) => !v)}
-            className="text-muted border-0 bg-transparent p-0 text-sm fw-medium text-left hover:text-white transition-colors cursor-pointer"
+            className="text-muted border-0 bg-transparent p-0 text-sm fw-medium text-left hover:text-main transition-colors cursor-pointer"
           >
             {showComments ? 'Hide comments' : `View all ${commentsCount} comments`}
           </button>
@@ -364,7 +364,7 @@ const Post = ({
               ) : (
                 comments.map((c) => (
                   <div key={c.id} className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-black">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border border-[color:var(--border)]/60 bg-secondary">
                       <img
                         src={c.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.username}`}
                         alt=""
@@ -373,10 +373,10 @@ const Post = ({
                     </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
-                        <span className="fw-bold text-sm text-white">{c.username}</span>
+                        <span className="fw-bold text-sm text-main">{c.username}</span>
                         <span className="text-muted text-xs">{timeAgo(c.createdAt)}</span>
                       </div>
-                      <p className="text-white/80 text-sm leading-relaxed">{c.content}</p>
+                      <p className="text-[color:var(--text-main)]/80 text-sm leading-relaxed">{c.content}</p>
                     </div>
                   </div>
                 ))

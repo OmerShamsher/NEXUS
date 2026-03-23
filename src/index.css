@@ -499,6 +499,12 @@ body {
 
 .text-muted { color: var(--text-muted); }
 
+/* Theme-aware helpers (so light/dark stay readable) */
+.text-main { color: var(--text-main); }
+.bg-main { background: var(--bg-primary); }
+.bg-secondary { background: var(--bg-secondary); }
+.border-std { border-color: var(--border); }
+
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-width-none { scrollbar-width: none; }
