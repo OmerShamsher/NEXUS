@@ -42,15 +42,19 @@ const Navbar = () => {
                 <NavLink 
                   key={item.name}
                   to={item.path} 
-                  className={({isActive}) => `
-                    flex items-center gap-2.5 h-full relative text-[13px] font-black uppercase tracking-widest transition-all
-                    ${isActive ? 'text-accent' : 'text-text-secondary hover:text-text-main'}
-                  `}
+                  className="h-full"
                 >
-                  <item.icon size={19} strokeWidth={isActive ? 3 : 2} />
-                  <span>{item.name}</span>
-                  {location.pathname === item.path && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent rounded-t-full shadow-[0_-2px_8px_rgba(37,99,235,0.4)]"></div>
+                  {({ isActive }) => (
+                    <div className={`
+                      flex items-center gap-2.5 h-full relative text-[13px] font-black uppercase tracking-widest transition-all
+                      ${isActive ? 'text-accent' : 'text-text-secondary hover:text-text-main'}
+                    `}>
+                      <item.icon size={19} strokeWidth={isActive ? 3 : 2} />
+                      <span>{item.name}</span>
+                      {isActive && (
+                        <div className="absolute bottom-0 left-0 right-0 h-[3.5px] bg-accent rounded-t-full shadow-[0_-2px_10px_rgba(37,99,235,0.4)]"></div>
+                      )}
+                    </div>
                   )}
                 </NavLink>
               ))}
