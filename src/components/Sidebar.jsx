@@ -2,111 +2,93 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   Home, 
-  Search as SearchIcon, 
   Compass, 
   Video, 
   MessageCircle, 
   Heart, 
   PlusSquare, 
   User, 
+  Settings,
+  Bookmark,
   LogOut,
-  Instagram,
-  Sun,
-  Moon
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 
 const Sidebar = ({ onCreateClick, theme, toggleTheme }) => {
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
   const navigate = useNavigate();
   
   const navItems = [
     { name: 'Home', icon: Home, path: '/' },
-    { name: 'Search', icon: SearchIcon, path: '/search' },
     { name: 'Explore', icon: Compass, path: '/explore' },
     { name: 'Reels', icon: Video, path: '/reels' },
     { name: 'Messages', icon: MessageCircle, path: '/messages' },
     { name: 'Notifications', icon: Heart, path: '/notifications' },
+    { name: 'Saved', icon: Bookmark, path: '/saved' },
+    { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
   return (
-    <aside className="sidebar glass border-0 flex-shrink-0">
+    <aside className="w-[280px] h-screen fixed left-0 top-0 border-r border-border bg-sidebar flex flex-col p-8 z-50">
+      {/* Profile Section */}
       <div 
-        className="sidebar-logo flex items-center gap-3 cursor-pointer group transition-all duration-500 mb-12 hover:scale-[1.02]" 
-        onClick={() => navigate('/')}
+        className="flex items-center gap-4 mb-10 cursor-pointer group hover:opacity-80 transition-all"
+        onClick={() => navigate('/profile')}
       >
-        <div className="relative">
-          <div className="absolute inset-0 bg-accent rounded-xl blur-[10px] opacity-0 group-hover:opacity-30 transition-opacity"></div>
-          <div className="relative w-12 h-12 bg-gradient-neon rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform duration-500">
-             <Instagram size={30} strokeWidth={1.5} />
-          </div>
+        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-border p-0.5">
+           <img 
+             src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.username}`} 
+             alt="User Avatar" 
+             className="w-full h-full rounded-full object-cover group-hover:scale-110 transition-transform duration-500" 
+           />
         </div>
-        <span className="nav-text fs-2 font-black tracking-tighter gradient-text group-hover:tracking-normal transition-all duration-700">NEXUS</span>
+        <div className="flex flex-col overflow-hidden">
+           <span className="font-extrabold text-[15px] text-text-main truncate">{profile?.full_name || profile?.username}</span>
+           <span className="text-text-secondary text-[12px] font-medium truncate">@{profile?.username}</span>
+        </div>
       </div>
 
-      <nav className="flex-grow flex flex-col gap-2 overflow-y-auto no-scrollbar">
+      <nav className="flex-grow flex flex-col gap-1 overflow-y-auto no-scrollbar">
         {navItems.map((item) => (
           <NavLink 
             key={item.name} 
             to={item.path} 
             className={({ isActive }) => 
-              `nav-link group relative ${isActive ? 'active' : 'opacity-70 hover:opacity-100'}`
+              `sidebar-link group ${isActive ? 'active' : ''}`
             }
           >
-            <item.icon className="nav-icon relative z-10 group-hover:scale-110 transition-transform duration-300" />
-            <span className="nav-text text-[15px] font-bold tracking-tight relative z-10">{item.name}</span>
-            {/* Active Glow Indicator */}
-            <NavLink 
-              to={item.path}
-              className={({ isActive }) => 
-                isActive ? "absolute left-0 w-1.5 h-1/2 bg-accent rounded-r-full shadow-[0_0_15px_rgba(255,0,85,0.6)]" : "hidden"
-              }
-            />
+            <item.icon className="transition-transform group-hover:scale-110" strokeWidth={2.5} />
+            <span>{item.name}</span>
           </NavLink>
         ))}
         
         <button 
           onClick={onCreateClick} 
-          className="nav-link border-0 w-full text-left bg-transparent cursor-pointer group opacity-70 hover:opacity-100"
+          className="premium-btn w-full mt-6 flex items-center justify-center gap-3 py-4 rounded-2xl"
         >
-          <div className="relative">
-             <div className="absolute inset-0 bg-accent rounded-full blur-[8px] opacity-0 group-hover:opacity-40 transition-opacity"></div>
-             <PlusSquare className="nav-icon relative z-10 group-hover:scale-110 transition-transform duration-300" />
-          </div>
-          <span className="nav-text text-[15px] font-bold tracking-tight">Create</span>
+          <PlusSquare size={20} />
+          <span className="font-black text-[14px] uppercase tracking-wider">Create</span>
         </button>
-
-        <NavLink 
-          to="/profile" 
-          className={({ isActive }) => 
-            `nav-link group ${isActive ? 'active' : 'opacity-70 hover:opacity-100'}`
-          }
-        >
-          <User className="nav-icon group-hover:scale-110 transition-transform duration-300" />
-          <span className="nav-text text-[15px] font-bold tracking-tight">Profile</span>
-        </NavLink>
       </nav>
 
-      <div className="mt-auto border-t border-white/[0.03] pt-6 flex flex-col gap-2">
+      <div className="mt-6 border-t border-border-soft pt-6 flex flex-col gap-2">
          <button 
            onClick={toggleTheme} 
-           className="nav-link border-0 w-full text-left bg-transparent cursor-pointer group opacity-70 hover:opacity-100 hover:bg-white/5"
+           className="sidebar-link border-0 w-full text-left bg-transparent cursor-pointer"
          >
-            <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center group-hover:bg-accent/10 transition-colors">
-               {theme === 'dark' ? <Sun size={22} className="text-white" /> : <Moon size={22} className="text-zinc-900" />}
-            </div>
-            <span className="nav-text text-[14px] font-bold">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
          </button>
 
          <button 
            onClick={signOut} 
-           className="nav-link border-0 w-full text-left bg-transparent cursor-pointer group opacity-50 hover:opacity-100 hover:text-red-500 hover:bg-red-500/5 transition-all"
+           className="sidebar-link border-0 w-full text-left bg-transparent cursor-pointer text-red-500 hover:bg-red-50"
          >
-            <div className="w-10 h-10 flex items-center justify-center">
-               <LogOut size={22} className="group-hover:scale-110 transition-transform" />
-            </div>
-            <span className="nav-text text-[14px] font-bold">Logout</span>
+            <LogOut size={20} />
+            <span>Logout</span>
          </button>
       </div>
     </aside>
@@ -114,3 +96,4 @@ const Sidebar = ({ onCreateClick, theme, toggleTheme }) => {
 };
 
 export default Sidebar;
+

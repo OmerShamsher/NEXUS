@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import Post from '../components/Post';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
-import { Sparkles, Loader2, Camera } from 'lucide-react';
+import { Sparkles, Loader2, Camera, ChevronRight, Hash, Facebook, Twitter, Youtube, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchPosts = async () => {
     try {
@@ -14,7 +16,7 @@ const Home = () => {
         .from('posts')
         .select(`
           *,
-          profiles:user_id (id, username, avatar_url)
+          profiles:user_id (id, username, avatar_url, full_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -47,11 +49,10 @@ const Home = () => {
     const channel = supabase
       .channel('public:posts')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, (payload) => {
-        fetchPosts(); // Refresh on new post
+        fetchPosts(); 
       })
       .subscribe();
 
-    // Listen for custom trigger from CreatePost modal
     const handleRefresh = () => fetchPosts();
     window.addEventListener('refresh-feed', handleRefresh);
 
@@ -61,85 +62,143 @@ const Home = () => {
     };
   }, []);
 
+  const stories = [
+    { name: 'Emma', img: 'https://i.pravatar.cc/150?u=emma', unread: true },
+    { name: 'Jason', img: 'https://i.pravatar.cc/150?u=jason', unread: true },
+    { name: 'TravelNow', img: 'https://i.pravatar.cc/150?u=travel', unread: false },
+    { name: 'FoodieLover', img: 'https://i.pravatar.cc/150?u=food', unread: false },
+    { name: 'Creative', img: 'https://i.pravatar.cc/150?u=art', unread: true },
+  ];
+
   return (
-    <div className="feed-container px-6 max-w-[600px] pb-20 pt-8 sm:pt-12">
-      {/* Stories - Masterclass Style */}
-      <div className="flex gap-5 mb-14 overflow-x-auto py-2 scrollbar-hide no-scrollbar scrollbar-width-none items-start">
-        {/* Your Story */}
-        <div className="flex flex-col items-center gap-2.5 group cursor-pointer shrink-0 transition-transform active:scale-95" onClick={() => window.dispatchEvent(new CustomEvent('open-create-post'))}>
-          <div className="relative">
-             <div className="absolute inset-[-4px] bg-gradient-neon rounded-full blur-[8px] opacity-20 group-hover:opacity-60 transition-opacity"></div>
-             <div className="relative w-[76px] h-[76px] p-[3px] bg-gradient-insta rounded-full group-hover:rotate-[10deg] transition-transform duration-500">
-                <div className="w-full h-full rounded-full border-[3px] border-[#050505] overflow-hidden bg-zinc-900 flex items-center justify-center relative">
-                   <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=me`} alt="Your Story" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                   <div className="absolute inset-0 bg-black/40"></div>
+    <div className="feed-grid">
+      {/* Left Main Feed */}
+      <div className="flex flex-col">
+        {/* Stories Section */}
+        <div className="bg-bg-card border border-border-soft rounded-[32px] p-6 mb-8 shadow-sm flex items-center gap-6 overflow-x-auto no-scrollbar scrollbar-hide">
+             {/* Your Story */}
+             <div className="flex flex-col items-center gap-2 group cursor-pointer shrink-0" onClick={() => window.dispatchEvent(new CustomEvent('open-create-post'))}>
+                <div className="relative">
+                   <div className="w-[72px] h-[72px] rounded-full border-2 border-border p-1">
+                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=me`} className="w-full h-full rounded-full object-cover" alt="Your Story" />
+                   </div>
+                   <div className="absolute bottom-0 right-0 w-6 h-6 bg-accent rounded-full border-4 border-white flex items-center justify-center text-white text-[18px] font-black pb-0.5 shadow-md">
+                      +
+                   </div>
                 </div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 border-white/50 bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-                   <span className="text-white text-xl font-black mb-1">+</span>
-                </div>
+                <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Your Story</span>
              </div>
-          </div>
-          <span className="text-[11px] font-black tracking-widest uppercase text-white/50 group-hover:text-white transition-colors">Your Story</span>
+
+             {/* Dynamic Stories */}
+             {stories.map((s, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 group cursor-pointer shrink-0">
+                   <div className={`avatar-ring ${s.unread ? 'story-unread' : ''}`}>
+                      <div className="w-[66px] h-[66px] rounded-full border-2 border-white overflow-hidden bg-bg-app">
+                         <img src={s.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={s.name} />
+                      </div>
+                   </div>
+                   <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">{s.name}</span>
+                </div>
+             ))}
         </div>
 
-        {/* Other Stories */}
-        {['Nexus', 'Creative', 'Hacker', 'Design', 'Future', 'Social', 'Global'].map((name, i) => (
-          <div key={i} className="flex flex-col items-center gap-2.5 group cursor-pointer shrink-0 transition-transform active:scale-95">
-            <div className="relative">
-              <div className="absolute inset-[-4px] bg-white/5 rounded-full blur-[4px] group-hover:bg-accent/40 transition-all duration-500"></div>
-              <div className="relative w-[76px] h-[76px] p-[3px] bg-gradient-to-tr from-accent to-accent-secondary rounded-full group-hover:scale-105 transition-all duration-500">
-                 <div className="w-full h-full rounded-full border-[3px] border-[#050505] overflow-hidden bg-zinc-900 shadow-inner">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name + i}`} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]" />
+        {/* FEED SECTION */}
+        <div className="flex flex-col gap-10">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-6 bg-bg-card rounded-[40px] border border-border-soft">
+              <Loader2 className="animate-spin text-accent" size={48} />
+              <span className="text-[10px] font-black tracking-[0.3em] text-text-muted uppercase italic">Syncing Network...</span>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-28 text-center gap-8 bg-bg-card rounded-[40px] border border-border-soft">
+               <Camera size={64} className="text-text-muted opacity-20" strokeWidth={1} />
+               <div className="flex flex-col gap-2">
+                 <h2 className="font-black text-3xl tracking-tighter text-text-main uppercase italic">Void Detected</h2>
+                 <p className="text-text-secondary font-bold text-[13px] tracking-wide max-w-[320px] leading-relaxed uppercase">Start the transmission by sharing your first moment.</p>
+               </div>
+               <button onClick={() => window.dispatchEvent(new CustomEvent('open-create-post'))} className="premium-btn px-12 py-5">
+                  TRANSMIT SIGNAL
+               </button>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} key={post.postId}>
+                <Post {...post} />
+              </motion.div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div className="flex flex-col gap-8 sticky top-28 h-fit">
+         {/* Suggested for you */}
+         <div className="card-premium p-8">
+            <div className="flex items-center justify-between mb-8">
+               <h3 className="text-[14px] font-black uppercase tracking-widest text-text-main">Suggested for you</h3>
+               <button className="text-[11px] font-black text-accent uppercase tracking-widest hover:underline border-0 bg-transparent cursor-pointer">View All</button>
+            </div>
+            
+            <div className="flex flex-col gap-6">
+               {[
+                 { name: 'Wanderlust_Jen', handle: 'Gommeng', img: 'https://i.pravatar.cc/150?u=jen' },
+                 { name: 'Mike_Travels', handle: 'Gommeng', img: 'https://i.pravatar.cc/150?u=mike' },
+                 { name: 'Healthy_Bites', handle: 'Commaing', img: 'https://i.pravatar.cc/150?u=foodie' },
+               ].map((user, i) => (
+                 <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                       <img src={user.img} className="w-11 h-11 rounded-full border border-border-soft" alt="" />
+                       <div className="flex flex-col">
+                          <span className="font-extrabold text-[13px] text-text-main">{user.name}</span>
+                          <span className="text-[11px] font-medium text-text-muted">{user.handle}</span>
+                       </div>
+                    </div>
+                    <button className="secondary-btn text-[11px] py-1.5 px-4 font-black uppercase text-accent border-accent/20 hover:bg-accent/5">Follow</button>
                  </div>
-              </div>
+               ))}
             </div>
-            <span className="text-[11px] font-black tracking-widest uppercase text-white/50 group-hover:text-white transition-colors">{name}</span>
-          </div>
-        ))}
-      </div>
+         </div>
 
-      <div className="flex flex-col gap-10">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-6">
-            <div className="relative">
-               <div className="absolute inset-0 bg-accent rounded-full blur-[30px] opacity-20 animate-pulse"></div>
-               <Loader2 className="animate-spin text-accent relative z-10" size={48} strokeWidth={1.5} />
+         {/* Trending Topics */}
+         <div className="card-premium p-8">
+            <h3 className="text-[14px] font-black uppercase tracking-widest text-text-main mb-8">Trending Topics</h3>
+            <div className="flex flex-col gap-4">
+               {['#TravelGoals', '#FoodieAdventures', '#FitnessInspiration', '#TechTrends', '#ArtisticSoul'].map((tag, i) => (
+                 <div key={i} className="flex items-center gap-3 group cursor-pointer">
+                    <div className="w-8 h-8 rounded-lg bg-bg-app flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-white transition-all">
+                       <Hash size={16} strokeWidth={3} />
+                    </div>
+                    <span className="text-[13px] font-bold text-text-secondary group-hover:text-accent transition-colors">{tag}</span>
+                    <ChevronRight size={14} className="ml-auto opacity-0 group-hover:opacity-100 text-accent transition-all" />
+                 </div>
+               ))}
             </div>
-            <span className="text-[10px] font-black tracking-[0.3em] text-white/30 uppercase">Curating Feed...</span>
-          </div>
-        ) : (
-          posts.map((post) => (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} key={post.postId}>
-              <Post {...post} />
-            </motion.div>
-          ))
-        )}
-      </div>
+         </div>
 
-      {posts.length === 0 && !loading && (
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center py-28 text-center gap-8"
-        >
-           <div className="relative group">
-              <div className="absolute inset-0 bg-accent rounded-[40px] blur-[30px] opacity-10 group-hover:opacity-30 transition-opacity"></div>
-              <div className="w-32 h-32 rounded-[40px] bg-white/[0.03] border border-white/10 flex items-center justify-center glass group-hover:rotate-[10deg] transition-transform duration-700">
-                 <Camera size={44} className="text-white/40 group-hover:text-accent transition-colors" strokeWidth={1} />
-              </div>
-           </div>
-           <div className="flex flex-col gap-2">
-             <h2 className="font-black text-3xl tracking-tighter text-white uppercase italic">Echo Chamber Empty</h2>
-             <p className="text-white/40 font-bold text-[13px] tracking-wide max-w-[320px] leading-relaxed uppercase">Your feed is waiting for its first masterpiece. Start the trend now.</p>
-           </div>
-           <button 
-             onClick={() => window.dispatchEvent(new CustomEvent('open-create-post'))}
-             className="premium-btn px-12 py-5 text-[11px] font-black tracking-[0.3em] uppercase mt-2 group flex items-center gap-3"
-           >
-              TRANSMIT SIGNAL <Sparkles size={16} className="group-hover:rotate-45 transition-transform" />
-           </button>
-        </motion.div>
-      )}
+         {/* Follow US & Footer */}
+         <div className="card-premium p-8">
+            <h3 className="text-[14px] font-black uppercase tracking-widest text-text-main mb-8 text-center">Follow us</h3>
+            <div className="flex items-center justify-center gap-6 mb-8">
+               <button className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-110 transition-all border-0 cursor-pointer shadow-lg shadow-blue-600/30">
+                  <Facebook fill="currentColor" size={20} />
+               </button>
+               <button className="w-12 h-12 rounded-full bg-sky-400 text-white flex items-center justify-center hover:scale-110 transition-all border-0 cursor-pointer shadow-lg shadow-sky-400/30">
+                  <Twitter fill="currentColor" size={20} />
+               </button>
+               <button className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center hover:scale-110 transition-all border-0 cursor-pointer shadow-lg shadow-red-600/30">
+                  <Youtube fill="currentColor" size={20} />
+               </button>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-black uppercase text-text-muted tracking-widest">
+               <span className="hover:text-accent cursor-pointer">About</span>
+               <span className="hover:text-accent cursor-pointer">Help</span>
+               <span className="hover:text-accent cursor-pointer">Privacy</span>
+               <span className="hover:text-accent cursor-pointer">Terms</span>
+               <span className="hover:text-accent cursor-pointer">Locations</span>
+            </div>
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mt-6 opacity-40">© 2026 NEXUS FROM MYAPP</p>
+         </div>
+      </div>
     </div>
   );
 };

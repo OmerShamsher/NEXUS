@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-import { Loader2, Bookmark, FolderArchive } from 'lucide-react';
+import { Loader2, Bookmark, FolderArchive, Sparkles } from 'lucide-react';
 import Post from '../components/Post';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,7 +14,6 @@ const Saved = () => {
     if (!session?.user) return;
     try {
       setLoading(true);
-
       const { data: savesData, error: savesErr } = await supabase
         .from('saves')
         .select('post_id, created_at')
@@ -48,7 +47,7 @@ const Saved = () => {
           mediaUrl: p.content_url,
           caption: p.caption,
           type: p.type || 'image',
-          commentsTotal: 0, // In a real app we'd fetch actual counts here
+          commentsTotal: 0, 
           saveCreatedAt: saveCreatedAtByPostId.get(p.id) || null,
         })) || [];
 
@@ -67,65 +66,42 @@ const Saved = () => {
   };
 
   useEffect(() => {
-    if (!session?.user) return;
-    fetchSaved();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
+    if (session?.user) fetchSaved();
+  }, [session]);
 
   const emptyState = useMemo(() => !loading && savedPosts.length === 0, [loading, savedPosts.length]);
 
   return (
-    <div className="max-w-[630px] mx-auto py-12 px-4 pb-32 min-h-screen relative">
-      <div className="absolute top-[10%] right-[-20%] w-[300px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none"></div>
-
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter mb-2 uppercase text-white flex items-center gap-4">
-             <div className="w-12 h-12 rounded-[18px] bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-                <Bookmark size={24} strokeWidth={1.5} />
-             </div>
-             Archive
-          </h1>
-          <p className="text-[10px] font-black tracking-[0.2em] text-white/40 uppercase mt-2">Saved Transmissions & Signals</p>
+    <div className="max-w-[700px] mx-auto py-12 px-6 pb-32">
+      <div className="mb-12 flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+           <h1 className="text-4xl font-black tracking-tighter text-text-main italic uppercase flex items-center gap-4">
+              <Bookmark size={32} className="text-accent" /> Archive
+           </h1>
+           <p className="text-text-secondary text-[14px] font-bold uppercase tracking-widest flex items-center gap-2">
+              <Sparkles size={16} className="text-accent" /> Your curated collection
+           </p>
         </div>
-        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center glass shadow-[0_0_15px_var(--accent-glow)]">
-          <FolderArchive size={20} className="text-accent" />
-        </div>
-      </motion.div>
+      </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-6">
-           <div className="relative">
-              <div className="absolute inset-0 bg-accent rounded-full blur-[30px] opacity-20 animate-pulse"></div>
-              <Loader2 size={48} className="text-accent animate-spin" strokeWidth={1.5} />
-           </div>
-           <span className="text-[10px] font-black tracking-[0.3em] text-white/30 uppercase">Retrieving Archive...</span>
+        <div className="flex flex-col items-center justify-center py-40 gap-6">
+          <Loader2 className="animate-spin text-accent" size={48} />
+          <span className="text-[11px] font-black tracking-[0.3em] text-text-muted uppercase italic">Accessing Archives...</span>
         </div>
       ) : emptyState ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-32 text-center gap-6">
-          <div className="relative group">
-             <div className="absolute inset-0 bg-white/10 rounded-full blur-[40px] opacity-10"></div>
-             <div className="w-24 h-24 rounded-[40px] bg-white/[0.02] border border-white/5 flex items-center justify-center mx-auto relative z-10 glass">
-               <Bookmark size={40} className="text-white/20" strokeWidth={1} />
-             </div>
-          </div>
-          <div>
-            <h2 className="font-extrabold text-2xl text-white tracking-tight uppercase italic mb-2">Archive is Empty</h2>
-            <p className="text-muted text-sm max-w-[280px] font-medium tracking-wide mx-auto cursor-default opacity-80">
-              Preserve important signals by tapping the bookmark icon on any transmission.
-            </p>
-          </div>
-        </motion.div>
+        <div className="flex flex-col items-center justify-center py-40 text-center gap-8 bg-bg-card rounded-[40px] border border-border-soft">
+           <Bookmark size={64} className="text-text-muted opacity-20" strokeWidth={1} />
+           <div className="flex flex-col gap-2">
+              <h2 className="font-black text-2xl text-text-main uppercase tracking-tighter italic">Vault Empty</h2>
+              <p className="text-text-secondary font-bold text-[12px] tracking-wide max-w-[280px] uppercase mt-2">Save transmissions from the feed to see them here.</p>
+           </div>
+        </div>
       ) : (
         <div className="flex flex-col gap-10">
           <AnimatePresence>
             {savedPosts.map((post, i) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                key={post.postId}
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} key={post.postId}>
                  <Post {...post} />
               </motion.div>
             ))}
